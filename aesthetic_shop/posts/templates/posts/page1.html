@@ -1,0 +1,188 @@
+{% extends 'posts/base.html' %}
+
+{% block title %}Find Nearby Hospitals{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Find Nearby Hospitals</h1>
+
+    <!-- Form to select radius for the search -->
+    <form method="POST" id="radius-form" class="radius-form">
+        {% csrf_token %}
+        <label for="radius">Select radius (in km): </label>
+        <input type="number" id="radius" name="radius" value="5" required>
+        <button type="submit" class="btn">Find Hospitals</button>
+    </form>
+
+    <!-- Display the hospitals within the radius -->
+    <div id="hospital-list">
+        {% if hospitals %}
+            <h3>Hospitals within {{ radius }} km:</h3>
+            <ul class="hospital-list">
+                {% for hospital in hospitals %}
+                    <li>
+                        <!-- Hospital name with toggle functionality for details -->
+                        <a href="#" onclick="toggleDetails({{ forloop.counter }})" class="hospital-name">{{ hospital.name }}</a>
+                        <div id="hospital-{{ forloop.counter }}" class="hospital-details">
+                            <p><strong>Distance:</strong> {{ hospital.distance }} km</p>
+                            <p><strong>Available beds:</strong> {{ hospital.beds_available }}</p>
+                            <p><strong>Total beds:</strong> {{ hospital.beds_total }}</p>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No hospitals found within the selected radius.</p>
+        {% endif %}
+    </div>
+
+    <!-- JavaScript to get user location and submit form with coordinates -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Request user's location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    // Create hidden fields in the form with lat and lon values
+                    const form = document.getElementById('radius-form');
+                    const latField = document.createElement('input');
+                    latField.type = 'hidden';
+                    latField.name = 'latitude';
+                    latField.value = lat;
+                    form.appendChild(latField);
+
+                    const lonField = document.createElement('input');
+                    lonField.type = 'hidden';
+                    lonField.name = 'longitude';
+                    lonField.value = lon;
+                    form.appendChild(lonField);
+                }, function (error) {
+                    console.error("Error getting location: ", error);
+                    alert("Unable to retrieve your location. Please enter your address manually.");
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        });
+
+        // Toggle details for each hospital
+        function toggleDetails(index) {
+            const details = document.getElementById('hospital-' + index);
+            details.style.display = details.style.display === "none" ? "block" : "none";
+        }
+    </script>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Container styling */
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+
+    /* Heading */
+    h1 {
+        font-size: 2rem;
+        color: #333;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    /* Form styling */
+    .radius-form {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        align-items: center;
+    }
+
+    .radius-form label {
+        font-size: 1.2rem;
+        color: #333;
+        margin-right: 10px;
+    }
+
+    .radius-form input {
+        padding: 10px;
+        width: 100px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+        color: #333;
+    }
+
+    .btn {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 10px 15px;
+        font-size: 1rem;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+        background-color: #0056b3;
+    }
+
+    /* Hospital list styling */
+    .hospital-list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    .hospital-list li {
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .hospital-name {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #007bff;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .hospital-name:hover {
+        text-decoration: underline;
+    }
+
+    /* Hospital details styling */
+    .hospital-details {
+        display: none;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #ddd;
+    }
+
+    .hospital-details p {
+        margin: 5px 0;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .hospital-details strong {
+        color: #333;
+    }
+
+    /* General */
+    p {
+        font-size: 1rem;
+        color: #555;
+    }
+</style>
+{% endblock %}

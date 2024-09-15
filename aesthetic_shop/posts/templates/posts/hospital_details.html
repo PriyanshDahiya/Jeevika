@@ -1,0 +1,21 @@
+<!-- hospital_details.html -->
+
+{% extends 'posts/base.html' %}
+
+{% block title %}Hospital Details{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ hospital.name }}</h1>
+    <p><strong>Address:</strong> {{ hospital.address }}</p>
+    <p><strong>Total Beds:</strong> {{ hospital.beds_total }}</p>
+    <p><strong>Available Beds:</strong> {{ hospital.beds_available }}</p>
+
+    <!-- Form to update the bed count -->
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Update Bed Availability</button>
+    </form>
+</div>
+{% endblock %}
